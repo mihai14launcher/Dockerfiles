@@ -3,7 +3,13 @@ From ubuntu:latest
 RUN apt update -y
 RUN apt upgrade -y
 RUN apt install ufw -y
-RUN apt install -y systemctl && clear
+
+RUN apt-get update && \
+    apt-get install -y tmate && \
+    echo 'root:root' | chpasswd && \
+    printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d && \
+    apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
+    printf "systemctl start systemd-logind" >> /etc/profile
 
 RUN ufw allow 8080
 RUN ufw allow 5657
