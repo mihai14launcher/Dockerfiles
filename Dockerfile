@@ -27,7 +27,6 @@ RUN curl -s https://packagecloud.io/install/repositories/pufferpanel/pufferpanel
 
 RUN sudo apt install htop tmate php npm python3-pip -y
 RUN sudo npm install -g pm2
-RUN clear
 RUN sudo pm2 install pm2-logrotate
 
 RUN sudo apt-get install pufferpanel
@@ -42,6 +41,6 @@ RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 	&& sudo apt update \
 	&& sudo apt install ngrok
 	
-RUN ngrok config add-authtoken put-your-ngrok-token-here
+RUN ngrok config add-authtoken 2MExnEkkUINhCYUztZ6pqFtrRJb_2ZE2neXSvVNQqY7AhWjAs
 
 RUN ngrok http 8080	
