@@ -1,8 +1,7 @@
-From ubuntu:latest
+FROM ubuntu:latest
 
 RUN apt update -y
 RUN apt upgrade -y
-RUN apt install ufw -y
 
 RUN apt-get update && \
     apt-get install -y tmate && \
@@ -11,36 +10,15 @@ RUN apt-get update && \
     apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
     printf "systemctl start systemd-logind" >> /etc/profile
 
-RUN ufw allow 8080
-RUN ufw allow 5657
+# Create a script to start tmate
+RUN printf "#!/bin/bash\n\
+tmate -S /tmp/tmate.sock new-session -d\n\
+tmate -S /tmp/tmate.sock wait tmate-ready\n\
+tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}' > /tmp/tmate-ssh\n\
+tmate -S /tmp/tmate.sock display -p '#{tmate_web}' > /tmp/tmate-web\n\
+cat /tmp/tmate-ssh\n\
+cat /tmp/tmate-web\n\
+tail -f /dev/null" > /usr/local/bin/start-tmate.sh && chmod +x /usr/local/bin/start-tmate.sh
 
-EXPOSE 8080
-EXPOSE 5657
-
-RUN apt install systemctl -y
-
-RUN apt install nginx curl nano wget unzip tar zip -y
-
-RUN apt install sudo
-
-RUN curl -s https://packagecloud.io/install/repositories/pufferpanel/pufferpanel/script.deb.sh | sudo os=ubuntu dist=jammy bash
-
-RUN sudo apt install htop tmate php npm python3-pip -y
-RUN sudo npm install -g pm2
-RUN sudo pm2 install pm2-logrotate
-
-RUN sudo apt-get install pufferpanel
-
-RUN sudo pufferpanel user add admin1 admin1 admin1 dev@a.io admin
-
-RUN sudo systemctl enable --now pufferpanel
-RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-	| sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
-	&& echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-	| sudo tee /etc/apt/sources.list.d/ngrok.list \
-	&& sudo apt update \
-	&& sudo apt install ngrok
-	
-RUN ngrok config add-authtoken 2MExnEkkUINhCYUztZ6pqFtrRJb_2ZE2neXSvVNQqY7AhWjAs
-
-RUN ngrok http 8080	
+# Start tmate
+CMD ["/usr/local/bin/start-tmate.sh"]
