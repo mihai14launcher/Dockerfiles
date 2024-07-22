@@ -31,7 +31,7 @@ RUN sudo pm2 install pm2-logrotate
 
 RUN sudo apt-get install pufferpanel
 
-RUN sudo pufferpanel user add admin@admin.admin admin1 admin1 admin1 admin
+RUN sudo pufferpanel user add admin1 admin1 admin1 dev@a.io admin
 
 RUN sudo systemctl enable --now pufferpanel
 RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
