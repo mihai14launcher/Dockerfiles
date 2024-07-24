@@ -35,9 +35,9 @@ RUN echo 'server {\n\
 
 # Enable the custom configuration by linking it to the sites-enabled directory
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-
-# Run tmate session and start nginx in the foreground
-CMD ["tmate"]
+RUN tmate
+# Start NGINX in the foreground
+CMD ["nginx", "-g", "daemon off;"]
 
 # Set the entrypoint to systemd
 ENTRYPOINT ["/sbin/init"]
