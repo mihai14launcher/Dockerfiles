@@ -17,8 +17,8 @@ RUN pm2 install pm2-logrotate
 RUN apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
     printf "systemctl start systemd-logind" >> /etc/profile
 
-# Copy the HTML file to the NGINX default directory
-COPY index.html /var/www/html/index.html
+# Create the HTML file with the desired content
+RUN echo '<!DOCTYPE html>\n<html>\n<head>\n<title>Hello from NGINX</title>\n</head>\n<body>\n<h1><strong>**Now you can use uptime robot or another service status uptime to host your app 24/7</strong></h1>\n</body>\n</html>' > /var/www/html/index.html
 
 # Expose port 6969
 EXPOSE 6969
@@ -35,7 +35,7 @@ RUN echo 'server {\n\
 
 # Enable the custom configuration by linking it to the sites-enabled directory
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-RUN tmate
+
 # Start NGINX in the foreground
 CMD ["nginx", "-g", "daemon off;"]
 
