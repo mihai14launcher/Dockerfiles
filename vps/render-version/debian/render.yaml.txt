@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: shellinabox-app
+    env: docker
+    plan: free
+    dockerfilePath: vps/render-version/debian/./Dockerfile
+    envVars:
+      - key: NGROK_TOKEN
+        value: <your-ngrok-token>
+      - key: NGROK_EDGE_URL
+        value: <your-ngrok-edge-url>
+    healthCheckPath: /
+    autoDeploy: true
