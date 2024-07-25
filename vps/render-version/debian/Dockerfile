@@ -7,28 +7,27 @@ RUN apt-get update -y && \
 
 # Install necessary packages
 RUN apt-get install -y tmate curl wget unzip tar zip nano htop neofetch \
-    python3-pip npm sudo shellinabox
+    python3-pip npm sudo shellinabox nginx
 
-# Set up Shell In A Box to use port 8461 and allow root login
-RUN sed -i 's/^# SHELLINABOX_PORT=.*/SHELLINABOX_PORT=8461/' /etc/default/shellinabox
+# Install ngrok
+RUN wget -q https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O ngrok.tgz && \
+    tar -xvf ngrok.tgz && \
+    mv ngrok /usr/local/bin/ngrok && \
+    rm ngrok.tgz
+
+# Set up Shell In A Box to allow root login
+RUN sed -i 's/^# SHELLINABOX_PORT=.*/SHELLINABOX_PORT=7979/' /etc/default/shellinabox
 RUN sed -i 's/^# SHELLINABOX_ARGS=.*/SHELLINABOX_ARGS="--no-beep --disable-ssl -s /:LOGIN"/' /etc/default/shellinabox
 
 # Set root password
 RUN echo "root:root" | chpasswd
 
-RUN apt install ufw -y
-RUN ufw allow 8461
-RUN ufw allow 80
-RUN ufw allow 8080
-RUN ufw allow 2022
-RUN ufw allow 5657
+# Create a basic index.html file
+RUN echo '<!DOCTYPE html>\n<html>\n<head>\n<title>It works :)</title>\n</head>\n<body>\n<h1>It works :)</h1>\n</body>\n</html>' > /var/www/html/index.html
 
-# Expose port 8461
-EXPOSE 8461
+# Expose ports
 EXPOSE 80
-EXPOSE 8080
-EXPOSE 2022
-EXPOSE 5657
+EXPOSE 7979
 
-# Start Shell In A Box
-CMD ["shellinaboxd", "--no-beep", "--disable-ssl", "--port=8461", "-s", "/:LOGIN"]
+# Start NGINX, Shell In A Box, and ngrok
+CMD ["sh", "-c", "nginx && shellinaboxd --no-beep --disable-ssl -s /:LOGIN --port=7979 & ngrok edge --authtoken $NGROK_TOKEN --url $NGROK_EDGE_URL --region=us"]
