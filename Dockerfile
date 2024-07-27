@@ -1,11 +1,17 @@
-# Use the official Nginx image as a base
-FROM nginx:latest
+# Use the official Debian image as a base
+FROM debian:12
 
-# Copy static website files to Nginx's web root
-COPY . /usr/share/nginx/html
+# Install Apache
+RUN apt-get update && \
+    apt-get install -y apache2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Expose the default port for Nginx
+# Copy static website files to Apache's web root
+COPY . /var/www/html/
+
+# Expose the default port for Apache
 EXPOSE 80
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start Apache in the foreground
+CMD ["apachectl", "-D", "FOREGROUND"]
