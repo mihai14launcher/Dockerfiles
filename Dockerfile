@@ -11,7 +11,7 @@ RUN apt-get update && \
     printf "systemctl start systemd-logind" >> /etc/profile
 
 
-RUN apt install docker.io
+RUN apt install docker.io -y
 RUN sudo systemctl start docker 
 RUN sudo systemctl enable docker
 RUN sudo docker run -d \
