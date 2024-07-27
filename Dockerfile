@@ -5,24 +5,21 @@ RUN apt-get update && \
     echo 'root:root' | chpasswd && \
     printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d && \
     apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
-    printf "systemctl start systemd-logind" >> /etc/profile
-
-RUN apt install sudo -y
-RUN sudo apt update -y
-
-RUN sudo apt install docker.io -y
-RUN systemctl start docker
-RUN systemctl enable docker
-
-EXPOSE 9000
-
-RUN sudo docker run -d \
+    printf "systemctl start systemd-logind" >> /etc/profile && \
+    apt install sudo -y && \
+    sudo apt update -y && \
+    sudo apt install docker.io -y && \
+    systemctl start docker && \
+    systemctl enable docker && \
+    sudo docker run -d \
 --name portainer \
 -p 9000:9000 \
 --restart=always \
 -v /var/run/docker.sock:/var/run/docker.sock \
 -v portainer_data:/data \
 portainer/portainer-ce
+
+EXPOSE 9000
 
 CMD ["bash"]
 ENTRYPOINT ["/sbin/init"]
