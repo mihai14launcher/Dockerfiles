@@ -16,7 +16,7 @@ RUN systemctl enable docker
 
 EXPOSE 9000
 
-sudo docker run -d \
+RUN sudo docker run -d \
 --name portainer \
 -p 9000:9000 \
 --restart=always \
