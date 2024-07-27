@@ -1,25 +1,20 @@
 FROM debian:12
 
+# Install necessary packages
 RUN apt-get update && \
-    apt-get install -y tmate && \
+    apt-get install -y tmate sudo docker.io && \
     echo 'root:root' | chpasswd && \
-    printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d && \
-    apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
-    printf "systemctl start systemd-logind" >> /etc/profile && \
-    apt install sudo -y && \
-    sudo apt update -y && \
-    sudo apt install docker.io -y && \
-    systemctl start docker && \
-    systemctl enable docker && \
-    sudo docker run -d \
---name portainer \
--p 9000:9000 \
---restart=always \
--v /var/run/docker.sock:/var/run/docker.sock \
--v portainer_data:/data \
-portainer/portainer-ce
+    apt-get clean
 
+# Start docker daemon in the background and portainer
+RUN printf '#!/bin/bash\n' > /start.sh && \
+    printf 'dockerd &\n' >> /start.sh && \
+    printf 'sleep 5\n' >> /start.sh && \
+    printf 'docker run -d --name portainer -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce\n' >> /start.sh && \
+    chmod +x /start.sh
+
+# Expose port
 EXPOSE 9000
 
-CMD ["bash"]
-ENTRYPOINT ["/sbin/init"]
+# Use the custom start script as the entry point
+CMD ["/start.sh"]
