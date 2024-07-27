@@ -9,7 +9,7 @@ RUN apt-get update && \
     printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d && \
     apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
     printf "systemctl start systemd-logind" >> /etc/profile
-
+RUN apt install sudo -y
 
 RUN apt install docker.io -y
 RUN sudo systemctl start docker 
