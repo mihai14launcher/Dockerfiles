@@ -1,25 +1,11 @@
-# Use the official WordPress image as a base
-FROM wordpress:latest
+# Use the official Nginx image as a base
+FROM nginx:latest
 
-# Install required packages
-RUN apt-get update && \
-    apt-get install -y \
-        sudo \
-        less \
-        vim \
-        net-tools \
-        iputils-ping && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Copy static website files to Nginx's web root
+COPY . /usr/share/nginx/html
 
-# Copy custom configurations if needed
-# COPY custom-config.php /usr/src/wordpress/wp-config.php
-
-# Expose the default port for WordPress
+# Expose the default port for Nginx
 EXPOSE 80
 
-# Set the entry point to the standard WordPress entry point script
-ENTRYPOINT ["docker-entrypoint.sh"]
-
-# Set the default command to start Apache in the foreground
-CMD ["apache2-foreground"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
