@@ -1,22 +1,34 @@
-FROM docker:20.10.7-dind
+FROM debian:12
 
 # Install necessary packages
-RUN apk update && \
-    apk add --no-cache sudo && \
+RUN apt-get update && \
+    apt-get install -y \
+        systemd \
+        systemd-sysv \
+        dbus \
+        sudo \
+        docker.io && \
     echo 'root:root' | chpasswd && \
-    printf '#!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d && \
-    printf "systemctl start systemd-logind" >> /etc/profile
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create start script
-RUN mkdir /portainer && \
-    printf '#!/bin/sh\n' > /portainer/start.sh && \
-    printf 'dockerd-entrypoint.sh &\n' >> /portainer/start.sh && \
-    printf 'sleep 10\n' >> /portainer/start.sh && \
-    printf 'docker run -d --name portainer -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce\n' >> /portainer/start.sh && \
-    chmod +x /portainer/start.sh
+# Create systemd service for Docker
+RUN mkdir -p /etc/systemd/system/docker.service.d && \
+    printf '[Service]\nExecStart=\nExecStart=/usr/bin/dockerd -H fd://\n' > /etc/systemd/system/docker.service.d/override.conf
+
+# Enable Docker service
+RUN systemctl enable docker
+
+# Create systemd service for Portainer
+RUN printf '[Unit]\nDescription=Portainer Service\nAfter=docker.service\nRequires=docker.service\n' > /etc/systemd/system/portainer.service && \
+    printf '[Service]\nExecStart=/usr/bin/sudo docker run -d --name portainer -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce\n' >> /etc/systemd/system/portainer.service && \
+    printf '[Install]\nWantedBy=multi-user.target\n' >> /etc/systemd/system/portainer.service
+
+# Enable Portainer service
+RUN systemctl enable portainer
 
 # Expose port
 EXPOSE 9000
 
-# Use the custom start script as the entry point
-CMD ["/portainer/start.sh"]
+# Use systemd as the entry point
+CMD ["/sbin/init"]
