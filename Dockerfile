@@ -1,17 +1,17 @@
-# Use the official Debian image as a base
-FROM debian:12
+# Use the official Node.js image as a base
+FROM node:16
 
-# Install Apache
-RUN apt-get update && \
-    apt-get install -y apache2 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Set the working directory
+WORKDIR /app
 
-# Copy static website files to Apache's web root
-COPY . /var/www/html/
+# Clone the Uptime Kuma repository
+RUN git clone https://github.com/louislam/uptime-kuma.git .
 
-# Expose the default port for Apache
-EXPOSE 80
+# Install dependencies
+RUN npm install
 
-# Start Apache in the foreground
-CMD ["apachectl", "-D", "FOREGROUND"]
+# Expose the default port for Uptime Kuma
+EXPOSE 3001
+
+# Start Uptime Kuma
+CMD ["npm", "run", "start-server"]
