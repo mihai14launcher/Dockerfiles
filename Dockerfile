@@ -1,34 +1,25 @@
-FROM debian:12
+# Use the official WordPress image as a base
+FROM wordpress:latest
 
-# Install necessary packages
+# Install required packages
 RUN apt-get update && \
     apt-get install -y \
-        systemd \
-        systemd-sysv \
-        dbus \
         sudo \
-        docker.io && \
-    echo 'root:root' | chpasswd && \
+        less \
+        vim \
+        net-tools \
+        iputils-ping && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create systemd service for Docker
-RUN mkdir -p /etc/systemd/system/docker.service.d && \
-    printf '[Service]\nExecStart=\nExecStart=/usr/bin/dockerd -H fd://\n' > /etc/systemd/system/docker.service.d/override.conf
+# Copy custom configurations if needed
+# COPY custom-config.php /usr/src/wordpress/wp-config.php
 
-# Enable Docker service
-RUN systemctl enable docker
+# Expose the default port for WordPress
+EXPOSE 80
 
-# Create systemd service for Portainer
-RUN printf '[Unit]\nDescription=Portainer Service\nAfter=docker.service\nRequires=docker.service\n' > /etc/systemd/system/portainer.service && \
-    printf '[Service]\nExecStart=/usr/bin/sudo docker run -d --name portainer -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce\n' >> /etc/systemd/system/portainer.service && \
-    printf '[Install]\nWantedBy=multi-user.target\n' >> /etc/systemd/system/portainer.service
+# Set the entry point to the standard WordPress entry point script
+ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Enable Portainer service
-RUN systemctl enable portainer
-
-# Expose port
-EXPOSE 9000
-
-# Use systemd as the entry point
-CMD ["/sbin/init"]
+# Set the default command to start Apache in the foreground
+CMD ["apache2-foreground"]
