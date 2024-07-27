@@ -10,6 +10,20 @@ RUN apt-get update && \
     apt-get install -y systemd systemd-sysv dbus dbus-user-session && \
     printf "systemctl start systemd-logind" >> /etc/profile
 
+
+RUN apt install docker.io
+RUN sudo systemctl start docker 
+RUN sudo systemctl enable docker
+RUN sudo docker run -d \
+--name portainer \
+-p 9000:9000 \
+--restart=always \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v portainer_data:/data \
+portainer/portainer-ce
+
+EXPOSE 9000
+
 # Create a script to start tmate
 RUN printf "#!/bin/bash\n\
 tmate -S /tmp/tmate.sock new-session -d\n\
